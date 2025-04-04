@@ -7,8 +7,11 @@ This repository contains a highly optimized implementation for training Large La
 - **TPU v4-32 Optimizations**: Specialized code for TPU v4-32 hardware with efficient parallelism strategies
 - **Memory Efficiency**: Optimized memory usage with gradient checkpointing and efficient attention mechanisms
 - **Performance Monitoring**: Comprehensive logging and performance tracking
-- **Long Context Support**: Support for very long sequences (up to 32K tokens)
+- **Long Context Support**: Support for very long sequences (up to 128K tokens)
 - **Enhanced Reasoning**: Additional reasoning layers for improved model capabilities
+- **One-Command Training**: Simple `run.py` script that handles the entire training process
+- **Hugging Face Integration**: Automatic model upload to Hugging Face Hub
+- **Resource Checking**: Automatic verification of system resources before training
 
 ## Requirements
 
@@ -89,9 +92,42 @@ chmod +x tpu_train.sh
 
 ## Usage
 
+### One-Command Training (Recommended)
+
+The easiest way to train the model is to use the all-in-one `run.py` script:
+
+```bash
+# Just run this single command
+python run.py
+```
+
+This script will automatically:
+- Check system resources
+- Install required dependencies
+- Prepare the dataset
+- Train the model
+- Save checkpoints
+- Upload the model to Hugging Face (if requested)
+
+You can customize the training with various options:
+
+```bash
+# Train with custom parameters
+python run.py --model_size 600b --batch_size 32 --steps 500000 --learning_rate 0.00015
+
+# Use a smaller model for testing
+python run.py --model_size 7b
+
+# Push to Hugging Face
+python run.py --push_to_hub --hf_repo "your-username/your-model-name"
+
+# Resume training from the latest checkpoint
+python run.py --resume
+```
+
 ### Full Training on TPU Hardware
 
-To train a model on TPU v4-32 hardware, use the `tpu_train.py` script or the provided shell scripts:
+Alternatively, you can use the `tpu_train.py` script or the provided shell scripts:
 
 ```bash
 # Option 1: Using the Python script directly
@@ -137,6 +173,16 @@ The implementation includes:
 - **Data Parallelism**: Optimized data loading and processing
 - **Mixed Precision Training**: BFloat16 support for TPU
 - **Gradient Checkpointing**: Memory-efficient backpropagation
+
+## Available Model Sizes
+
+| Size | Parameters | Hidden Size | Layers | Attention Heads | Intermediate Size |
+|------|------------|-------------|--------|----------------|------------------|
+| 7b   | 7 billion  | 4096        | 32     | 32             | 11008            |
+| 13b  | 13 billion | 5120        | 40     | 40             | 13824            |
+| 70b  | 70 billion | 8192        | 80     | 64             | 28672            |
+| 175b | 175 billion| 12288       | 96     | 96             | 49152            |
+| 600b | 600 billion| 18432       | 128    | 128            | 73728            |
 
 ## Performance
 
