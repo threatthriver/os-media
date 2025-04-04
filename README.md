@@ -1,20 +1,20 @@
-# LLM Training - Simple Solution
+# LLM Training - TPU-Optimized for Coding Excellence
 
-This repository contains a streamlined solution for training a Large Language Model (LLM) with up to 600 billion parameters.
+This repository contains a streamlined solution for training a Large Language Model (LLM) with up to 600 billion parameters, specifically optimized for TPU hardware and designed to excel at coding tasks. The trained model aims to outperform GPT and Gemini models in coding and reasoning benchmarks.
 
 ## Quick Start
 
 Just run the script and it will handle everything automatically:
 
 ```bash
-python run.py
+python run.py --dataset code-mix
 ```
 
 That's it! The script will:
-- Check system resources
+- Check system resources and TPU availability
 - Install required dependencies
-- Prepare the dataset
-- Train the model
+- Prepare the optimized dataset mix for coding tasks
+- Train the model with specialized reasoning layers
 - Save checkpoints
 - Upload the model to Hugging Face (if requested)
 
@@ -39,26 +39,55 @@ This repository contains just 3 essential files:
 ## Command-Line Options
 
 ```bash
-# Train with custom parameters
-python run.py --model_size 600b --batch_size 32 --steps 500000 --learning_rate 0.00015
+# Train with optimized dataset mix for coding tasks
+python run.py --dataset code-mix --model_size 600b
 
 # Use a smaller model for testing
-python run.py --model_size 7b
+python run.py --model_size 7b --dataset code-mix
+
+# Customize TPU parallelism
+python run.py --tensor_parallel_size 8 --dataset code-mix
+
+# Disable specialized reasoning layers (not recommended for coding tasks)
+python run.py --use_reasoning_layer false --dataset code-mix
 
 # Push to Hugging Face
-python run.py --push_to_hub --hf_repo "your-username/your-model-name"
+python run.py --dataset code-mix --push_to_hub --hf_repo "your-username/your-model-name"
 
 # Resume training from the latest checkpoint
-python run.py --resume
+python run.py --dataset code-mix --resume
+```
+
+## TPU Optimization Options
+
+```bash
+# Full optimization for TPU v4-32
+python run.py \
+  --dataset code-mix \
+  --model_size 600b \
+  --batch_size 32 \
+  --steps 500000 \
+  --learning_rate 0.00015 \
+  --max_seq_length 131072 \
+  --use_flash_attention \
+  --use_reasoning_layer \
+  --tensor_parallel_size 8 \
+  --gradient_checkpointing \
+  --precision bfloat16
 ```
 
 ## Model Features
 
-- 128K token context window
-- Enhanced reasoning capabilities
-- Flash attention for efficient computation
-- Gradient checkpointing for memory efficiency
-- Rotary positional embeddings (RoPE)
+- **128K token context window** for handling large code repositories and documentation
+- **Specialized reasoning layers** designed specifically for coding tasks
+- **Flash attention** for efficient computation on TPU hardware
+- **Gradient checkpointing** for memory efficiency with large models
+- **Rotary positional embeddings (RoPE)** with scaling for extended context
+- **Mixture of experts** approach in reasoning layers for specialized code understanding
+- **TPU-optimized architecture** with tensor parallelism for maximum performance
+- **Code-focused dataset mix** combining GitHub code, The Stack, and high-quality text data
+- **SwiGLU activation** for improved reasoning capabilities
+- **Cosine learning rate schedule** with warmup for stable training
 
 ## License
 
