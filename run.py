@@ -689,7 +689,7 @@ def main():
         return 1
 
     # Prepare dataset
-    if not prepare_dataset(args.dataset, args.output_dir):
+    if not prepare_dataset(args.dataset):
         logger.error("Dataset preparation failed")
         return 1
 
