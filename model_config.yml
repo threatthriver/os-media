@@ -1,0 +1,87 @@
+# model_config.yml - Configuration for training a 600B parameter LLM on TPU v4-32
+# This configuration is optimized for high performance and efficient training
+
+# Run name and output directory
+run_name: "llm_600b_training"
+base_output_directory: "${GCS_BUCKET}/llm_600b_training"
+
+# Model architecture
+# Scaling to 600B parameters with a deep and wide architecture
+global_parameter_scale: 128  # Scaling factor for model dimensions
+base_emb_dim: 8192           # Base embedding dimension
+base_num_query_heads: 64     # Base number of query heads
+base_num_kv_heads: 8         # Base number of key-value heads (Multi-query attention)
+base_mlp_dim: 28672          # Base MLP dimension
+base_num_decoder_layers: 80  # Base number of decoder layers
+head_dim: 128                # Dimension per attention head
+
+# Hardware configuration
+hardware: 'tpu'
+
+# Parallelism strategy optimized for TPU v4-32
+# Using a combination of data, tensor, and pipeline parallelism
+dcn_data_parallelism: -1     # Auto-determined based on available slices
+dcn_fsdp_parallelism: 1
+ici_fsdp_parallelism: -1     # Auto-determined based on available devices per slice
+ici_tensor_parallelism: 8    # Tensor parallelism for efficient computation
+
+# Training parameters
+steps: 500000                # Total training steps
+per_device_batch_size: 4     # Batch size per device
+max_target_length: 4096      # Maximum sequence length
+gradient_accumulation_steps: 8  # Accumulate gradients for larger effective batch size
+
+# Learning rate schedule
+learning_rate: 1.5e-4        # Peak learning rate
+cosine_learning_rate_final_fraction: 0.1  # Final learning rate fraction
+warmup_steps_fraction: 0.01  # Warm-up period
+
+# Optimizer configuration
+opt_type: "adamw"            # AdamW optimizer
+adam_b1: 0.9                 # Beta1 parameter
+adam_b2: 0.95                # Beta2 parameter
+adam_eps: 1.e-8              # Epsilon parameter
+adam_weight_decay: 0.1       # Weight decay
+
+# Checkpointing
+enable_checkpointing: True
+checkpoint_period: 1000      # Save checkpoint every 1000 steps
+async_checkpointing: True    # Use asynchronous checkpointing for better performance
+
+# Dataset configuration
+dataset_type: "hf"           # Use HuggingFace dataset pipeline
+tokenizer_path: "google-t5/t5-large"  # Tokenizer to use
+packing: True                # Enable sequence packing for efficiency
+tokenize_train_data: True    # Tokenize data on the fly
+
+# HuggingFace dataset configuration
+hf_path: 'parquet'
+hf_train_files: '${GCS_BUCKET}/c4/en/3.0.1/c4-train.array_record*,${GCS_BUCKET}/redpajama/*-train-*.parquet,${GCS_BUCKET}/pile/*-train-*.parquet,${GCS_BUCKET}/slimpajama/*-train-*.parquet'
+eval_interval: 5000          # Evaluate every 5000 steps
+hf_eval_split: ''
+hf_eval_files: '${GCS_BUCKET}/c4/en/3.0.1/c4-validation.array_record*'
+
+# Logging and monitoring
+log_period: 100              # Log metrics every 100 steps
+enable_tensorboard: True     # Enable TensorBoard logging
+monitor_goodput: True        # Monitor training throughput
+
+# Mixed precision training
+dtype: "bfloat16"            # Use bfloat16 for training
+weight_dtype: "float32"      # Store weights in float32
+
+# Dropout for regularization
+enable_dropout: True
+dropout_rate: 0.1
+
+# Gradient clipping to prevent exploding gradients
+gradient_clipping_threshold: 1.0
+
+# Stack trace collection for debugging
+collect_stack_trace: True
+stack_trace_interval_seconds: 600  # Collect stack traces every 10 minutes
+
+# Profiling
+profiler: "xplane"           # Use XPlane profiler
+profiler_steps: 10           # Profile for 10 steps
+skip_first_n_steps_for_profiler: 5  # Skip first 5 steps for profiling

@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TPU-Optimized LLM Training
 
-## Getting Started
+This repository contains a highly optimized implementation for training Large Language Models (LLMs) on TPU v4-32 hardware. The code is specifically designed to efficiently train a 600 billion parameter model within a 30-day timeframe.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **TPU v4-32 Optimizations**: Specialized code for TPU v4-32 hardware with efficient parallelism strategies
+- **Memory Efficiency**: Optimized memory usage with gradient checkpointing and efficient attention mechanisms
+- **Performance Monitoring**: Comprehensive logging and performance tracking
+- **Long Context Support**: Support for very long sequences (up to 32K tokens)
+- **Enhanced Reasoning**: Additional reasoning layers for improved model capabilities
+
+## Requirements
+
+See `requirements.txt` for the full list of dependencies. Key requirements:
+
+```
+jax[tpu]==0.4.20
+jaxlib==0.4.20
+libtpu-nightly
+flax==0.7.5
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Usage
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+To train a model, use the `tpu_train.py` script:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+python tpu_train.py \
+  --model_size 600b \
+  --train_file /path/to/training/data.jsonl \
+  --tokenizer_file /path/to/tokenizer.model \
+  --batch_size 32 \
+  --gradient_accumulation_steps 8 \
+  --learning_rate 1.5e-4 \
+  --max_steps 500000 \
+  --warmup_steps 5000 \
+  --max_seq_length 32768 \
+  --output_dir /path/to/output \
+  --parallelism_type tensor \
+  --tensor_parallel_size 8 \
+  --use_flash_attention \
+  --use_gradient_checkpointing \
+  --use_rope_scaling \
+  --use_reasoning_layer
+```
 
-## Learn More
+## Architecture
 
-To learn more about Next.js, take a look at the following resources:
+The implementation includes:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Optimized Flash Attention**: Blocked implementation for efficient memory usage
+- **Tensor Parallelism**: Efficient parameter sharding across TPU devices
+- **Data Parallelism**: Optimized data loading and processing
+- **Mixed Precision Training**: BFloat16 support for TPU
+- **Gradient Checkpointing**: Memory-efficient backpropagation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Performance
 
-## Deploy on Vercel
+On TPU v4-32 hardware, this implementation achieves:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Efficient training of 600B parameter models
+- Support for sequence lengths up to 32K tokens
+- Memory-efficient operation with gradient checkpointing
+- Optimized communication patterns for TPU pods
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+MIT
