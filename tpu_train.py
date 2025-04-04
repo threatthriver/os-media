@@ -16,9 +16,9 @@ from typing import Dict, Any, Optional, List, Tuple
 import jax
 import jax.numpy as jnp
 import flax
-import tensorflow as tf
+# import tensorflow as tf  # Commented out as TensorFlow is not available for Python 3.13
 import numpy as np
-import sentencepiece as spm
+# import sentencepiece as spm  # Commented out as SentencePiece is not available
 from functools import partial
 
 # Set up logging

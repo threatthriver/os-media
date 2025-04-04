@@ -5,7 +5,7 @@
 export PYTHONPATH=$PYTHONPATH:$(pwd)
 
 # Run the training with optimized parameters
-python tpu_train.py \
+python3 tpu_train.py \
   --model_size 600b \
   --train_file HuggingFaceFW/fineweb \
   --tokenizer_file gpt2 \

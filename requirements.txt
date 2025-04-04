@@ -1,49 +1,49 @@
 # Core dependencies optimized for TPU v4-32
-jax[tpu]==0.4.20  # Specific version for TPU v4-32 compatibility
-jaxlib==0.4.20     # Match jax version exactly
-libtpu-nightly     # Required for TPU v4-32
-flax==0.7.5        # Latest stable version with TPU optimizations
-optax==0.1.7       # Optimized optimizers for JAX
-numpy==1.24.3      # Specific version for compatibility
-tensorflow==2.15.0 # Latest version with TPU support
-tensorflow-datasets==4.9.2
+jax[tpu]>=0.4.20  # For TPU v4-32 compatibility
+jaxlib>=0.4.20     # Match jax version
+# libtpu-nightly     # Required for TPU v4-32 - install only on TPU machines
+flax>=0.7.5        # With TPU optimizations
+optax>=0.1.7       # Optimized optimizers for JAX
+numpy>=1.24.3      # For compatibility
+tensorflow>=2.15.0 # With TPU support
+tensorflow-datasets>=4.9.2
 
 # Text processing optimized for performance
-sentencepiece==0.1.99
-regex==2023.10.3
-transformers==4.36.2  # Latest version with TPU optimizations
+sentencepiece>=0.1.99
+regex>=2023.10.3
+transformers>=4.36.2  # With TPU optimizations
 
 # Data handling with optimized I/O
-datasets==2.15.0    # Latest version with streaming optimizations
-huggingface_hub==0.19.4
-jsonlines==3.1.0
-pyarrow==14.0.1     # Latest version with improved memory efficiency
-pandas==2.1.3       # Latest stable version
+datasets>=2.15.0    # With streaming optimizations
+huggingface_hub>=0.19.4
+jsonlines>=3.1.0
+pyarrow>=14.0.1     # With improved memory efficiency
+pandas>=2.1.3       # Stable version
 
 # Utilities optimized for TPU monitoring
-tqdm==4.66.1
-wandb==0.16.0       # Latest version with TPU support
-tensorboard==2.15.1 # Matches TensorFlow version
-pyyaml==6.0.1
-msgpack==1.0.7
-orbax-checkpoint==0.4.2  # Latest version with TPU optimizations
+tqdm>=4.66.1
+wandb>=0.16.0       # With TPU support
+tensorboard>=2.15.1 # Compatible with TensorFlow
+pyyaml>=6.0.1
+msgpack>=1.0.7
+# orbax-checkpoint>=0.4.2  # With TPU optimizations - install only on TPU machines
 
 # Memory optimization for large models
-chex==0.1.7         # JAX utilities
-jmp==0.0.4          # JAX mixed precision
-jax-smi==0.1.5      # JAX TPU memory monitoring
+chex>=0.1.7         # JAX utilities
+# jmp>=0.0.4          # JAX mixed precision - install only on TPU machines
+# jax-smi>=0.1.5      # JAX TPU memory monitoring - install only on TPU machines
 
 # Distributed training optimized for TPU pods
-ray==2.7.1          # Latest version with TPU support
+# ray>=2.7.1          # With TPU support - install only on TPU machines
 
 # Optimization for tensor operations
-einops==0.7.0       # Latest version with improved performance
-jax-tpu-embedding==0.1.2  # TPU embedding support
+einops>=0.7.0       # With improved performance
+# jax-tpu-embedding>=0.1.2  # TPU embedding support - install only on TPU machines
 
-# TPU-specific optimizations
-cloud-tpu-client==0.10  # For TPU management
-cloud-tpu-profiler==2.4.0  # For TPU profiling
+# TPU-specific optimizations - install only on TPU machines
+# cloud-tpu-client>=0.10  # For TPU management
+# cloud-tpu-profiler>=2.4.0  # For TPU profiling
 
 # Performance monitoring
-psutil==5.9.6       # For system monitoring
-py3nvml==0.2.7      # For hardware monitoring
+psutil>=5.9.6       # For system monitoring
+# py3nvml>=0.2.7      # For hardware monitoring - install only on TPU machines
