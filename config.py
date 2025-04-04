@@ -150,7 +150,7 @@ class ModelSizeConfig:
     num_query_heads: int
     num_kv_heads: int
     intermediate_size: int
-    max_position_embeddings: int = 32768  # Increased to support longer contexts
+    max_position_embeddings: int = 131072  # Increased to support 128K token contexts
     vocab_size: int = 32000
     reasoning_intermediate_size: int = 16384  # Hidden dimension for reasoning layers
     num_reasoning_layers: int = 2  # Number of reasoning layers
@@ -165,7 +165,7 @@ MODEL_SIZES = {
         num_query_heads=32,
         num_kv_heads=8,
         intermediate_size=11008,
-        max_position_embeddings=32768,  # Increased to support longer contexts
+        max_position_embeddings=131072,  # Increased to support 128K token contexts
         vocab_size=32000,
         reasoning_intermediate_size=16384,
         num_reasoning_layers=1
@@ -177,7 +177,7 @@ MODEL_SIZES = {
         num_query_heads=40,
         num_kv_heads=10,
         intermediate_size=13824,
-        max_position_embeddings=32768,  # Increased to support longer contexts
+        max_position_embeddings=131072,  # Increased to support 128K token contexts
         vocab_size=32000,
         reasoning_intermediate_size=20480,
         num_reasoning_layers=1
@@ -189,7 +189,7 @@ MODEL_SIZES = {
         num_query_heads=64,
         num_kv_heads=8,
         intermediate_size=28672,
-        max_position_embeddings=32768,  # Increased to support longer contexts
+        max_position_embeddings=131072,  # Increased to support 128K token contexts
         vocab_size=32000,
         reasoning_intermediate_size=32768,
         num_reasoning_layers=2
@@ -201,7 +201,7 @@ MODEL_SIZES = {
         num_query_heads=96,
         num_kv_heads=12,
         intermediate_size=49152,
-        max_position_embeddings=32768,  # Increased to support longer contexts
+        max_position_embeddings=131072,  # Increased to support 128K token contexts
         vocab_size=32000,
         reasoning_intermediate_size=49152,
         num_reasoning_layers=2
@@ -213,7 +213,7 @@ MODEL_SIZES = {
         num_query_heads=128,
         num_kv_heads=16,
         intermediate_size=73728,
-        max_position_embeddings=32768,  # Increased to support longer contexts
+        max_position_embeddings=131072,  # Increased to support 128K token contexts
         vocab_size=32000,
         reasoning_intermediate_size=73728,
         num_reasoning_layers=3
@@ -249,9 +249,10 @@ def get_model_config(model_size: str) -> LLMConfig:
         use_flash_attention=True,
         use_gradient_checkpointing=True,
 
-        # Long context support
+        # Long context support for 128K tokens
         use_rope_scaling=True,
-        rope_scaling_factor=0.5,
+        rope_scaling_factor=0.25,  # More aggressive scaling for 128K tokens
+        rope_theta=1000000.0,  # Increased base for better long-context performance
 
         # Reasoning capabilities
         use_reasoning_layer=True,

@@ -290,7 +290,7 @@ class MultiQueryAttention(nn.Module):
         return outputs
 
 
-def flash_attention(q, k, v, mask=None, dropout_rate=0.0, deterministic=True, causal=True, block_size=128):
+def flash_attention(q, k, v, mask=None, dropout_rate=0.0, deterministic=True, causal=True, block_size=128, max_context_length=131072):
     """
     Implements optimized Flash Attention algorithm for TPU v4-32 with blocked computation.
 
@@ -312,6 +312,14 @@ def flash_attention(q, k, v, mask=None, dropout_rate=0.0, deterministic=True, ca
 
     # Scaled dot-product
     q = q * scale
+
+    # Dynamically adjust block size for very long sequences
+    if seq_len > 32768:
+        # For extremely long sequences (128K), use larger blocks
+        adjusted_block_size = min(2048, ((seq_len + 2047) // 2048) * 2048)
+        if adjusted_block_size > block_size:
+            print(f"Adjusting block size to {adjusted_block_size} for sequence length {seq_len}")
+            block_size = adjusted_block_size
 
     # For short sequences, use standard attention
     if seq_len <= block_size:
