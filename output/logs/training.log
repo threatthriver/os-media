@@ -1,0 +1,66 @@
+2025-04-04 18:31:48,081 - LLM-Trainer - INFO - Environment prepared successfully
+2025-04-04 18:31:48,081 - LLM-Trainer - INFO - 
+--------------------------------------------------------------------------------
+2025-04-04 18:31:48,081 - LLM-Trainer - INFO - | Preparing Dataset: HuggingFaceFW/fineweb
+2025-04-04 18:31:48,081 - LLM-Trainer - INFO - --------------------------------------------------------------------------------
+2025-04-04 18:31:48,081 - LLM-Trainer - INFO - Checking if dataset HuggingFaceFW/fineweb exists...
+2025-04-04 18:32:44,442 - LLM-Trainer - INFO - Dataset HuggingFaceFW/fineweb found
+2025-04-04 18:32:44,443 - LLM-Trainer - INFO - Dataset info: IterableDatasetDict({
+    train: IterableDataset({
+        features: ['text', 'id', 'dump', 'url', 'date', 'file_path', 'language', 'language_score', 'token_count'],
+        num_shards: 25868
+    })
+})
+2025-04-04 18:32:44,447 - LLM-Trainer - INFO - 
+--------------------------------------------------------------------------------
+2025-04-04 18:32:44,447 - LLM-Trainer - INFO - | Starting Model Training
+2025-04-04 18:32:44,447 - LLM-Trainer - INFO - --------------------------------------------------------------------------------
+2025-04-04 18:32:44,447 - LLM-Trainer - INFO - Model Size: 7b
+2025-04-04 18:32:44,447 - LLM-Trainer - INFO - Dataset: HuggingFaceFW/fineweb
+2025-04-04 18:32:44,447 - LLM-Trainer - INFO - Batch Size: 32
+2025-04-04 18:32:44,447 - LLM-Trainer - INFO - Learning Rate: 0.00015
+2025-04-04 18:32:44,447 - LLM-Trainer - INFO - Max Steps: 10
+2025-04-04 18:32:44,447 - LLM-Trainer - INFO - Max Sequence Length: 131072
+2025-04-04 18:32:44,447 - LLM-Trainer - INFO - Output Directory: ./output
+2025-04-04 18:32:47,990 - LLM-Trainer - INFO - JAX devices: [CpuDevice(id=0)]
+2025-04-04 18:32:47,991 - LLM-Trainer - INFO - Number of devices: 1
+2025-04-04 18:32:47,991 - LLM-Trainer - INFO - Creating model configuration...
+2025-04-04 18:32:47,991 - LLM-Trainer - INFO - Initializing tokenizer...
+2025-04-04 18:32:48,427 - LLM-Trainer - INFO - Initializing 7b model...
+2025-04-04 18:32:48,427 - LLM-Trainer - ERROR - Error during training: type object 'FlaxAutoModelForCausalLM' has no attribute 'config_class'
+2025-04-04 18:32:48,428 - LLM-Trainer - ERROR - Traceback (most recent call last):
+  File "/Users/aniketkumar/Documents/temp-project/run.py", line 344, in train_model
+    FlaxAutoModelForCausalLM.config_class(
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: type object 'FlaxAutoModelForCausalLM' has no attribute 'config_class'
+
+2025-04-04 18:32:48,433 - LLM-Trainer - ERROR - Training failed
+2025-04-04 18:33:24,404 - LLM-Trainer - INFO - Environment prepared successfully
+2025-04-04 18:33:24,404 - LLM-Trainer - INFO - 
+--------------------------------------------------------------------------------
+2025-04-04 18:33:24,404 - LLM-Trainer - INFO - | Preparing Dataset: HuggingFaceFW/fineweb
+2025-04-04 18:33:24,404 - LLM-Trainer - INFO - --------------------------------------------------------------------------------
+2025-04-04 18:33:24,404 - LLM-Trainer - INFO - Checking if dataset HuggingFaceFW/fineweb exists...
+2025-04-04 18:34:19,453 - LLM-Trainer - INFO - Dataset HuggingFaceFW/fineweb found
+2025-04-04 18:34:19,453 - LLM-Trainer - INFO - Dataset info: IterableDatasetDict({
+    train: IterableDataset({
+        features: ['text', 'id', 'dump', 'url', 'date', 'file_path', 'language', 'language_score', 'token_count'],
+        num_shards: 25868
+    })
+})
+2025-04-04 18:34:19,457 - LLM-Trainer - INFO - 
+--------------------------------------------------------------------------------
+2025-04-04 18:34:19,458 - LLM-Trainer - INFO - | Starting Model Training
+2025-04-04 18:34:19,458 - LLM-Trainer - INFO - --------------------------------------------------------------------------------
+2025-04-04 18:34:19,458 - LLM-Trainer - INFO - Model Size: 7b
+2025-04-04 18:34:19,458 - LLM-Trainer - INFO - Dataset: HuggingFaceFW/fineweb
+2025-04-04 18:34:19,458 - LLM-Trainer - INFO - Batch Size: 32
+2025-04-04 18:34:19,458 - LLM-Trainer - INFO - Learning Rate: 0.00015
+2025-04-04 18:34:19,458 - LLM-Trainer - INFO - Max Steps: 10
+2025-04-04 18:34:19,458 - LLM-Trainer - INFO - Max Sequence Length: 131072
+2025-04-04 18:34:19,458 - LLM-Trainer - INFO - Output Directory: ./output
+2025-04-04 18:34:21,384 - LLM-Trainer - INFO - JAX devices: [CpuDevice(id=0)]
+2025-04-04 18:34:21,384 - LLM-Trainer - INFO - Number of devices: 1
+2025-04-04 18:34:21,384 - LLM-Trainer - INFO - Creating model configuration...
+2025-04-04 18:34:21,384 - LLM-Trainer - INFO - Initializing tokenizer...
+2025-04-04 18:34:21,874 - LLM-Trainer - INFO - Initializing 7b model...
