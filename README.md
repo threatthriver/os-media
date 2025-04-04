@@ -15,35 +15,118 @@ This repository contains a highly optimized implementation for training Large La
 See `requirements.txt` for the full list of dependencies. Key requirements:
 
 ```
-jax[tpu]==0.4.20
-jaxlib==0.4.20
-libtpu-nightly
-flax==0.7.5
+jax[tpu]>=0.4.20
+jaxlib>=0.4.20
+libtpu-nightly  # Only required on TPU hardware
+flax>=0.7.5
+tensorflow>=2.15.0  # Required for full training (Python <= 3.11)
+```
+
+## Installation
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/threatthriver/train_llm.git
+cd train_llm
+```
+
+### Option 1: For Local Testing (Python 3.13+)
+
+```bash
+# Install minimal dependencies
+pip install jax jaxlib numpy
+
+# Make scripts executable
+chmod +x simple_train.sh
+
+# Run the simplified script
+./simple_train.sh
+```
+
+### Option 2: For Full Training (Python 3.11)
+
+```bash
+# Create a virtual environment with Python 3.11
+python3.11 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Make scripts executable
+chmod +x train_llm.sh
+
+# Run the training script
+./train_llm.sh
+```
+
+### Option 3: For TPU Training (on Google Cloud)
+
+```bash
+# Create a TPU VM with v4-32 configuration
+gcloud compute tpus tpu-vm create llm-training \
+  --zone=us-central2-b \
+  --accelerator-type=v4-32 \
+  --version=tpu-vm-base
+
+# SSH into the TPU VM
+gcloud compute tpus tpu-vm ssh llm-training --zone=us-central2-b
+
+# Clone the repository and install dependencies
+git clone https://github.com/threatthriver/train_llm.git
+cd train_llm
+pip install -r requirements.txt
+
+# Set required environment variables
+export GCS_BUCKET=gs://your-bucket-name
+export PROJECT_ID=your-gcp-project-id
+
+# Run the training script
+chmod +x tpu_train.sh
+./tpu_train.sh
 ```
 
 ## Usage
 
-To train a model, use the `tpu_train.py` script:
+### Full Training on TPU Hardware
+
+To train a model on TPU v4-32 hardware, use the `tpu_train.py` script or the provided shell scripts:
 
 ```bash
+# Option 1: Using the Python script directly
 python tpu_train.py \
   --model_size 600b \
-  --train_file /path/to/training/data.jsonl \
-  --tokenizer_file /path/to/tokenizer.model \
+  --train_file HuggingFaceFW/fineweb \
+  --tokenizer_file gpt2 \
   --batch_size 32 \
   --gradient_accumulation_steps 8 \
   --learning_rate 1.5e-4 \
   --max_steps 500000 \
   --warmup_steps 5000 \
-  --max_seq_length 32768 \
-  --output_dir /path/to/output \
+  --max_seq_length 131072 \
+  --output_dir ./output \
   --parallelism_type tensor \
   --tensor_parallel_size 8 \
   --use_flash_attention \
   --use_gradient_checkpointing \
   --use_rope_scaling \
   --use_reasoning_layer
+
+# Option 2: Using the provided shell script
+./train_llm.sh
 ```
+
+### Local Testing with Simplified Scripts
+
+For local testing without TPU hardware, use the simplified scripts:
+
+```bash
+# Run the simplified training script
+./simple_train.sh
+```
+
+The simplified script will verify that JAX is working correctly on your system and simulate the training process without requiring TPU hardware or all dependencies.
 
 ## Architecture
 
@@ -63,6 +146,42 @@ On TPU v4-32 hardware, this implementation achieves:
 - Support for sequence lengths up to 32K tokens
 - Memory-efficient operation with gradient checkpointing
 - Optimized communication patterns for TPU pods
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Python Version Compatibility**
+   - The full training script requires Python 3.11 or lower due to TensorFlow compatibility
+   - If using Python 3.13+, use the simplified script (`simple_train.sh`)
+
+2. **Missing Dependencies**
+   - If you encounter `ModuleNotFoundError`, install the missing package:
+     ```bash
+     pip install <package-name>
+     ```
+   - For SentencePiece build issues, you may need to install system dependencies:
+     ```bash
+     # On Ubuntu/Debian
+     apt-get install cmake build-essential pkg-config
+
+     # On macOS
+     brew install cmake pkg-config
+     ```
+
+3. **TPU Support**
+   - The full training script requires TPU hardware
+   - You'll see errors like `Unable to initialize backend 'tpu'` when running on non-TPU hardware
+   - Use the simplified script for local testing
+
+4. **Permission Issues**
+   - Make sure scripts are executable:
+     ```bash
+     chmod +x *.sh
+     ```
+
+5. **Memory Issues on TPU**
+   - If you encounter OOM errors, try reducing batch size or enabling gradient checkpointing
 
 ## License
 
