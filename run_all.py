@@ -605,13 +605,20 @@ def upload_to_huggingface(output_dir, hf_repo):
     print_section("Uploading to Hugging Face")
 
     try:
-        from huggingface_hub import HfApi, create_repo
+        from huggingface_hub import HfApi, create_repo, login
         import os
+        import io
+        import json
+
+        # Use the provided token
+        hf_token = os.environ.get("HF_TOKEN", "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")
+        logger.info("Logging in to Hugging Face Hub")
+        login(token=hf_token)
 
         logger.info(f"Uploading model to Hugging Face: {hf_repo}")
 
-        # Create API object
-        api = HfApi()
+        # Create API object with token
+        api = HfApi(token=hf_token)
 
         # Check if repository exists, create if not
         try:
@@ -619,23 +626,27 @@ def upload_to_huggingface(output_dir, hf_repo):
             logger.info(f"Repository {hf_repo} already exists")
         except Exception:
             logger.info(f"Creating repository {hf_repo}")
-            create_repo(repo_id=hf_repo, repo_type="model", private=False)
+            create_repo(repo_id=hf_repo, repo_type="model", private=False, token=hf_token)
 
-        # Upload model files
+        # Upload model files directly from memory when possible
         logger.info(f"Uploading files from {output_dir} to {hf_repo}")
 
         # Upload model configuration
         config_path = os.path.join(output_dir, "config.json")
         if os.path.exists(config_path):
+            with open(config_path, "r") as f:
+                config_data = f.read()
+
             api.upload_file(
-                path_or_fileobj=config_path,
+                path_or_fileobj=io.BytesIO(config_data.encode()),
                 path_in_repo="config.json",
                 repo_id=hf_repo,
-                repo_type="model"
+                repo_type="model",
+                token=hf_token
             )
             logger.info("Uploaded config.json")
 
-        # Upload model weights
+        # Upload model weights directly to Hugging Face
         checkpoints_dir = os.path.join(output_dir, "checkpoints")
         if os.path.exists(checkpoints_dir):
             # Find the latest checkpoint
@@ -650,22 +661,33 @@ def upload_to_huggingface(output_dir, hf_repo):
                         file_path = os.path.join(root, file)
                         rel_path = os.path.relpath(file_path, checkpoint_dir)
 
+                        # Upload directly to Hugging Face
                         api.upload_file(
                             path_or_fileobj=file_path,
                             path_in_repo=rel_path,
                             repo_id=hf_repo,
-                            repo_type="model"
+                            repo_type="model",
+                            token=hf_token
                         )
                         logger.info(f"Uploaded {rel_path}")
 
+                        # Delete the file after uploading to save space
+                        if file.endswith(".msgpack") or file.endswith(".bin"):
+                            try:
+                                os.remove(file_path)
+                                logger.info(f"Deleted local file {file_path} to save space")
+                            except Exception as e:
+                                logger.warning(f"Could not delete file {file_path}: {e}")
+
         # Upload README with model information
+        model_size = os.path.basename(output_dir)
         readme_content = f"""# {hf_repo.split('/')[-1]}
 
 This model was trained using the LLM training framework optimized for TPU v4-32 hardware.
 
 ## Model Details
 
-- Size: {os.path.basename(output_dir)}
+- Size: {model_size}
 - Training Dataset: code-mix (GitHub code, The Stack, etc.)
 - Context Length: 131072 tokens
 - Training Steps: Varies by model size
@@ -684,16 +706,34 @@ print(tokenizer.decode(outputs[0]))
 ```
 """
 
-        with open("README.md", "w") as f:
-            f.write(readme_content)
-
+        # Upload README directly from memory
         api.upload_file(
-            path_or_fileobj="README.md",
+            path_or_fileobj=io.BytesIO(readme_content.encode()),
             path_in_repo="README.md",
             repo_id=hf_repo,
-            repo_type="model"
+            repo_type="model",
+            token=hf_token
         )
         logger.info("Uploaded README.md")
+
+        # Create tokenizer_config.json if it doesn't exist
+        tokenizer_config = {
+            "model_type": "llm",
+            "bos_token": "<s>",
+            "eos_token": "</s>",
+            "pad_token": "<pad>",
+            "unk_token": "<unk>",
+            "model_max_length": 131072
+        }
+
+        api.upload_file(
+            path_or_fileobj=io.BytesIO(json.dumps(tokenizer_config, indent=2).encode()),
+            path_in_repo="tokenizer_config.json",
+            repo_id=hf_repo,
+            repo_type="model",
+            token=hf_token
+        )
+        logger.info("Uploaded tokenizer_config.json")
 
         logger.info("Upload completed successfully")
         return True
