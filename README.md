@@ -1,13 +1,13 @@
-# LLM Training - TPU-Optimized for Coding Excellence
+# LLM Training - TPU-Optimized for 600B Parameter Model
 
-This repository contains a streamlined solution for training a Large Language Model (LLM) with up to 600 billion parameters, specifically optimized for TPU hardware and designed to excel at coding tasks. The trained model aims to outperform GPT and Gemini models in coding and reasoning benchmarks.
+This repository contains a streamlined solution for training a Large Language Model (LLM) with up to 600 billion parameters, specifically optimized for Google TPU v4-32 hardware. The implementation is designed to maximize performance on TPU hardware and includes specialized optimizations for coding and reasoning tasks.
 
 ## Quick Start
 
-Just run the script and it will handle everything automatically:
+Just run the unified launcher script and it will handle everything automatically:
 
 ```bash
-python run.py --dataset code-mix
+python3 run_all.py
 ```
 
 That's it! The script will:
@@ -17,14 +17,6 @@ That's it! The script will:
 - Train the model with specialized reasoning layers
 - Save checkpoints
 - Upload the model to Hugging Face (if requested)
-
-## Files
-
-This repository contains just 3 essential files:
-
-1. **run.py** - The main script that handles everything
-2. **model.py** - Contains the model architecture
-3. **requirements.txt** - Lists all dependencies
 
 ## Available Model Sizes
 
@@ -36,59 +28,131 @@ This repository contains just 3 essential files:
 | 175b | 175 billion| 12288       | 96     | 96             |
 | 600b | 600 billion| 18432       | 128    | 128            |
 
+## Running in Ubuntu Terminal
+
+To run the script in an Ubuntu terminal:
+
+1. Make sure you have Python 3.8+ installed:
+   ```bash
+   python3 --version
+   ```
+
+2. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd <repository-directory>
+   ```
+
+3. Make the script executable:
+   ```bash
+   chmod +x run_all.py
+   ```
+
+4. Run the script:
+   ```bash
+   ./run_all.py
+   ```
+
+5. For specific configurations:
+   ```bash
+   ./run_all.py --model_size 70b --dataset indian-mix --steps 100000
+   ```
+
+## Available Modes
+
+The unified launcher supports multiple operation modes:
+
+| Mode      | Description                                      | Command                           |
+|-----------|--------------------------------------------------|-----------------------------------|
+| train     | Train the model (default)                        | `./run_all.py --mode train`       |
+| test      | Run tests on the model and components            | `./run_all.py --mode test`        |
+| tokenize  | Create or load a tokenizer                       | `./run_all.py --mode tokenize`    |
+| all       | Run all operations (tokenize, train, test)       | `./run_all.py --mode all`         |
+
 ## Command-Line Options
 
-```bash
-# Train with optimized dataset mix for coding tasks
-python run.py --dataset code-mix --model_size 600b
-
-# Use a smaller model for testing
-python run.py --model_size 7b --dataset code-mix
-
-# Customize TPU parallelism
-python run.py --tensor_parallel_size 8 --dataset code-mix
-
-# Disable specialized reasoning layers (not recommended for coding tasks)
-python run.py --use_reasoning_layer false --dataset code-mix
-
-# Push to Hugging Face
-python run.py --dataset code-mix --push_to_hub --hf_repo "your-username/your-model-name"
-
-# Resume training from the latest checkpoint
-python run.py --dataset code-mix --resume
+```
+usage: run_all.py [-h] [--mode {train,test,tokenize,all}]
+                  [--model_size {7b,13b,70b,175b,600b}] [--output_dir OUTPUT_DIR]
+                  [--batch_size BATCH_SIZE] [--steps STEPS]
+                  [--learning_rate LEARNING_RATE] [--max_seq_length MAX_SEQ_LENGTH]
+                  [--use_flash_attention] [--use_reasoning_layer]
+                  [--num_checkpoints NUM_CHECKPOINTS]
+                  [--dataset {code-mix,indian-mix,HuggingFaceFW/fineweb,codeparrot/github-code,bigcode/the-stack,togethercomputer/RedPajama-Data-1T,EleutherAI/pile}]
+                  [--tokenizer_path TOKENIZER_PATH] [--push_to_hub] [--hf_repo HF_REPO]
+                  [--resume] [--force] [--debug] [--skip_dependency_check]
+                  [--skip_resource_check]
 ```
 
-## TPU Optimization Options
+### Key Options
+
+- `--mode`: Operation mode (train, test, tokenize, all)
+- `--model_size`: Model size (7b, 13b, 70b, 175b, 600b)
+- `--dataset`: Dataset to use (code-mix, indian-mix, or specific datasets)
+- `--steps`: Number of training steps
+- `--learning_rate`: Learning rate for training
+- `--max_seq_length`: Maximum sequence length
+- `--push_to_hub`: Push model to Hugging Face Hub
+- `--debug`: Enable debug logging
+
+## Examples
+
+### Train a 70B model with Indian language focus
 
 ```bash
-# Full optimization for TPU v4-32
-python run.py \
-  --dataset code-mix \
-  --model_size 600b \
-  --batch_size 32 \
-  --steps 500000 \
-  --learning_rate 0.00015 \
-  --max_seq_length 131072 \
-  --use_flash_attention \
-  --use_reasoning_layer \
-  --tensor_parallel_size 8 \
-  --gradient_checkpointing \
-  --precision bfloat16
+./run_all.py --model_size 70b --dataset indian-mix --steps 100000
 ```
 
-## Model Features
+### Test model components
 
-- **128K token context window** for handling large code repositories and documentation
-- **Specialized reasoning layers** designed specifically for coding tasks
-- **Flash attention** for efficient computation on TPU hardware
-- **Gradient checkpointing** for memory efficiency with large models
-- **Rotary positional embeddings (RoPE)** with scaling for extended context
-- **Mixture of experts** approach in reasoning layers for specialized code understanding
-- **TPU-optimized architecture** with tensor parallelism for maximum performance
-- **Code-focused dataset mix** combining GitHub code, The Stack, and high-quality text data
-- **SwiGLU activation** for improved reasoning capabilities
-- **Cosine learning rate schedule** with warmup for stable training
+```bash
+./run_all.py --mode test
+```
 
-## License
+### Train with custom parameters
 
-MIT
+```bash
+./run_all.py --model_size 13b --batch_size 64 --learning_rate 0.0001 --steps 50000
+```
+
+### Push trained model to Hugging Face
+
+```bash
+./run_all.py --push_to_hub --hf_repo "your-username/your-model-name"
+```
+
+## TPU Optimization
+
+This implementation includes specialized optimizations for Google TPU v4-32 hardware:
+
+- Uses bfloat16 precision for optimal TPU performance
+- Implements efficient tensor parallelism across TPU cores
+- Includes pipeline parallelism for large model training
+- Optimizes memory usage with gradient checkpointing
+- Implements flash attention for faster training
+- Uses specialized reasoning layers for improved model capabilities
+
+## Dataset Options
+
+The launcher supports multiple dataset configurations:
+
+- `code-mix`: A mix of coding-focused datasets (GitHub code, The Stack, etc.)
+- `indian-mix`: A mix of Indian language datasets
+- Individual datasets from Hugging Face
+
+## Model Architecture
+
+The model architecture includes:
+
+- Transformer-based architecture with up to 128 layers
+- Flash attention for efficient sequence processing
+- Specialized reasoning layers for improved capabilities
+- RoPE positional embeddings for better long-context understanding
+- SwiGLU activation functions for improved reasoning
+
+## Requirements
+
+- Python 3.8+
+- JAX/Flax for TPU optimization
+- Hugging Face libraries (transformers, datasets)
+- Weights & Biases for experiment tracking
