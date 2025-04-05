@@ -260,8 +260,16 @@ def check_system_resources(model_size, output_dir, num_checkpoints):
         logger.warning(f"Less than {ram_needed_gb:.2f} GB RAM available. Training may fail.")
 
     # Check disk space
-    disk_space_gb = shutil.disk_usage(output_dir).free / (1024 ** 3)
-    logger.info(f"Free disk space: {disk_space_gb:.2f} GB")
+    # Create output directory if it doesn't exist
+    try:
+        os.makedirs(output_dir, exist_ok=True)
+        disk_space_gb = shutil.disk_usage(output_dir).free / (1024 ** 3)
+        logger.info(f"Free disk space: {disk_space_gb:.2f} GB")
+    except Exception as e:
+        logger.warning(f"Could not check disk space: {e}")
+        # Use root directory as fallback
+        disk_space_gb = shutil.disk_usage('/').free / (1024 ** 3)
+        logger.info(f"Free disk space (root): {disk_space_gb:.2f} GB")
 
     # Estimate disk space needed for checkpoints
     checkpoint_size_gb = model_params_billions * 2  # Very rough estimate
@@ -597,12 +605,95 @@ def upload_to_huggingface(output_dir, hf_repo):
     print_section("Uploading to Hugging Face")
 
     try:
-        from huggingface_hub import HfApi
+        from huggingface_hub import HfApi, create_repo
+        import os
 
         logger.info(f"Uploading model to Hugging Face: {hf_repo}")
 
-        # For demonstration, we'll just log this
-        logger.info("Model would be uploaded here in a real implementation")
+        # Create API object
+        api = HfApi()
+
+        # Check if repository exists, create if not
+        try:
+            api.repo_info(repo_id=hf_repo, repo_type="model")
+            logger.info(f"Repository {hf_repo} already exists")
+        except Exception:
+            logger.info(f"Creating repository {hf_repo}")
+            create_repo(repo_id=hf_repo, repo_type="model", private=False)
+
+        # Upload model files
+        logger.info(f"Uploading files from {output_dir} to {hf_repo}")
+
+        # Upload model configuration
+        config_path = os.path.join(output_dir, "config.json")
+        if os.path.exists(config_path):
+            api.upload_file(
+                path_or_fileobj=config_path,
+                path_in_repo="config.json",
+                repo_id=hf_repo,
+                repo_type="model"
+            )
+            logger.info("Uploaded config.json")
+
+        # Upload model weights
+        checkpoints_dir = os.path.join(output_dir, "checkpoints")
+        if os.path.exists(checkpoints_dir):
+            # Find the latest checkpoint
+            checkpoints = [d for d in os.listdir(checkpoints_dir) if d.startswith("checkpoint-")]
+            if checkpoints:
+                latest_checkpoint = max(checkpoints, key=lambda x: int(x.split("-")[1]))
+                checkpoint_dir = os.path.join(checkpoints_dir, latest_checkpoint)
+
+                # Upload all files in the checkpoint directory
+                for root, _, files in os.walk(checkpoint_dir):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        rel_path = os.path.relpath(file_path, checkpoint_dir)
+
+                        api.upload_file(
+                            path_or_fileobj=file_path,
+                            path_in_repo=rel_path,
+                            repo_id=hf_repo,
+                            repo_type="model"
+                        )
+                        logger.info(f"Uploaded {rel_path}")
+
+        # Upload README with model information
+        readme_content = f"""# {hf_repo.split('/')[-1]}
+
+This model was trained using the LLM training framework optimized for TPU v4-32 hardware.
+
+## Model Details
+
+- Size: {os.path.basename(output_dir)}
+- Training Dataset: code-mix (GitHub code, The Stack, etc.)
+- Context Length: 131072 tokens
+- Training Steps: Varies by model size
+
+## Usage
+
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+model = AutoModelForCausalLM.from_pretrained("{hf_repo}")
+tokenizer = AutoTokenizer.from_pretrained("{hf_repo}")
+
+inputs = tokenizer("def fibonacci(n):", return_tensors="pt")
+outputs = model.generate(**inputs, max_length=100)
+print(tokenizer.decode(outputs[0]))
+```
+"""
+
+        with open("README.md", "w") as f:
+            f.write(readme_content)
+
+        api.upload_file(
+            path_or_fileobj="README.md",
+            path_in_repo="README.md",
+            repo_id=hf_repo,
+            repo_type="model"
+        )
+        logger.info("Uploaded README.md")
 
         logger.info("Upload completed successfully")
         return True
