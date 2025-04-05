@@ -10,6 +10,9 @@ echo "========================================================"
 # Install dependencies
 pip install -r requirements.txt
 
+# Install compatible version of optax for Python 3.8
+pip install 'optax<0.1.7'
+
 # Make the launcher script executable
 chmod +x run_all.py
 

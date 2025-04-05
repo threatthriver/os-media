@@ -2,7 +2,7 @@
 jax
 jaxlib
 flax
-optax
+optax<0.1.7
 numpy
 transformers
 datasets
@@ -14,3 +14,4 @@ einops
 psutil
 regex
 tensorboard
+typing_extensions

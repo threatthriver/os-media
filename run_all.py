@@ -17,6 +17,8 @@ import psutil
 import threading
 import queue
 from typing import Dict, Any, Optional, List, Tuple, Union
+# For Python 3.8 compatibility
+from typing_extensions import TypedDict, Literal
 import numpy as np
 import datetime
 
@@ -187,11 +189,28 @@ def check_dependencies():
     missing_packages = []
     for package in required_packages:
         try:
-            __import__(package.split('[')[0])  # Handle cases like 'package[extra]'
-            logger.info(f"✓ {package} is installed")
+            # Special handling for optax due to Python 3.8 compatibility issues
+            if package == "optax":
+                import optax
+                # Just access a basic function to verify it works
+                _ = optax.adam(0.001)
+                logger.info(f"✓ {package} is installed")
+            else:
+                __import__(package.split('[')[0])  # Handle cases like 'package[extra]'
+                logger.info(f"✓ {package} is installed")
         except ImportError:
             logger.warning(f"✗ {package} is not installed")
             missing_packages.append(package)
+        except TypeError as e:
+            if "'type' object is not subscriptable" in str(e) and package == "optax":
+                # This is a known issue with optax and Python 3.8
+                # The package is installed but has type annotation issues
+                logger.warning(f"⚠️ {package} has type annotation issues but should work")
+                # Install a compatible version
+                run_command("pip install 'optax<0.1.7'", check=False)
+            else:
+                logger.warning(f"✗ {package} error: {e}")
+                missing_packages.append(package)
 
     if missing_packages:
         logger.warning("Installing missing packages...")
